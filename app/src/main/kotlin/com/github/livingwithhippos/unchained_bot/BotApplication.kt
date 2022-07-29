@@ -280,6 +280,10 @@ class BotApplication : KoinComponent {
                                                     }
                                                 }
                                                 process.waitFor()
+                                                bot.sendMessage(
+                                                        chatId = ChatId.fromId(message.chat.id),
+                                                        text = localization.startingDownload
+                                                )
                                             }
                                         }
                                     } else
