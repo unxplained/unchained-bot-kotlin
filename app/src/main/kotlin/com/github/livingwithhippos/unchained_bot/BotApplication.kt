@@ -256,14 +256,14 @@ class BotApplication : KoinComponent {
                                         val itemMessage: String =
                                                 formatDownloadItem(downloadItem, allowTranscoding = true)
 
-                                        /*
+
                                         downloadScope.launch {
                                             withContext(Dispatchers.IO) {
                                                 val process = ProcessBuilder(
                                                         "wget",
                                                         "-P", downloadsPath,
                                                         wgetArguments,
-                                                        downloadItem.link
+                                                        downloadItem.download
                                                 ).redirectOutput(ProcessBuilder.Redirect.PIPE)
                                                         .start()
                                                 val reader = process.errorStream.bufferedReader(Charset.defaultCharset())
@@ -282,11 +282,11 @@ class BotApplication : KoinComponent {
                                                 process.waitFor()
                                             }
                                         }
-                                        */
+
 
                                         bot.sendMessage(
                                                 chatId = ChatId.fromId(message.chat.id),
-                                                text = downloadItem.link +" "+ downloadItem.download +" "+ downloadItem.generated,
+                                                text = downloadItem.download,
                                                 parseMode = ParseMode.MARKDOWN
                                         )
 
