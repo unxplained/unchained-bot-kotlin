@@ -92,6 +92,7 @@ class BotApplication : KoinComponent {
     private val getCommandFilter = Filter.Custom { (text?.startsWith("/get") ?: false) }
     private val torrentsCommandFilter = Filter.Custom { text?.startsWith("/torrents") ?: false }
     private val downloadsCommandFilter = Filter.Custom { (text?.startsWith("/downloads") ?: false) }
+    private val superCommandFilter = Filter.Custom { (text?.startsWith("/super") ?: false) }
 
     fun startBot() {
 
@@ -241,6 +242,86 @@ class BotApplication : KoinComponent {
                         bot.sendMessage(
                             chatId = ChatId.fromId(message.chat.id),
                             text = localization.wrongUnrestrictSyntax
+                        )
+                }
+
+                message(superCommandFilter and userFilter) {
+                    val args = getArgAsString(message.text)
+                    if (!args.isNullOrBlank()) {
+                        when {
+                            args.isWebUrl() -> {
+                                scope.launch {
+                                    val downloadItem = unrestrictLink(args)
+                                    if (downloadItem != null) {
+                                        val itemMessage: String =
+                                                formatDownloadItem(downloadItem, allowTranscoding = true)
+
+                                        downloadScope.launch {
+                                            withContext(Dispatchers.IO) {
+                                                val process = ProcessBuilder(
+                                                        "wget",
+                                                        "-P", downloadsPath,
+                                                        wgetArguments,
+                                                        downloadItem.link
+                                                ).redirectOutput(ProcessBuilder.Redirect.PIPE)
+                                                        .start()
+                                                val reader = process.errorStream.bufferedReader(Charset.defaultCharset())
+                                                reader.use {
+                                                    var line = it.readLine()
+                                                    while (line != null) {
+                                                        println(line)
+                                                        line = it.readLine()
+                                                        if (line != null)
+                                                            bot.sendMessage(
+                                                                    chatId = ChatId.fromId(message.chat.id),
+                                                                    text = line
+                                                            )
+                                                    }
+                                                }
+                                                process.waitFor()
+                                            }
+                                        }
+
+                                        bot.sendMessage(
+                                                chatId = ChatId.fromId(message.chat.id),
+                                                text = itemMessage,
+                                                parseMode = ParseMode.MARKDOWN
+                                        )
+                                    }
+                                }
+                            }
+                            args.isMagnet() -> {
+                                scope.launch {
+                                    val addedMagnet: UploadedTorrent? = addMagnet(args)
+                                    if (addedMagnet != null) {
+                                        val magnetMessage = localization.addedTorrent.replace("%id%", addedMagnet.id)
+
+                                        bot.sendMessage(
+                                                chatId = ChatId.fromId(message.chat.id),
+                                                text = magnetMessage
+                                        )
+
+                                        fetchTorrentInfo(addedMagnet.id)
+                                    }
+                                }
+                            }
+                            args.isTorrent() -> {
+                                val loaded = downloadTorrent(args)
+                                if (loaded)
+                                    bot.sendMessage(
+                                            chatId = ChatId.fromId(message.chat.id),
+                                            text = localization.uploadingTorrent
+                                    )
+                            }
+                            else -> bot.sendMessage(
+                                    chatId = ChatId.fromId(message.chat.id),
+                                    text = localization.wrongUnrestrictSyntax
+                            )
+                        }
+                    } else
+                        bot.sendMessage(
+                                chatId = ChatId.fromId(message.chat.id),
+                                text = localization.wrongUnrestrictSyntax
                         )
                 }
 
