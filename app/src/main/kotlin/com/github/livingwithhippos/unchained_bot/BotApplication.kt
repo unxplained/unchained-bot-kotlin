@@ -256,6 +256,7 @@ class BotApplication : KoinComponent {
                                         val itemMessage: String =
                                                 formatDownloadItem(downloadItem, allowTranscoding = true)
 
+                                        /*
                                         downloadScope.launch {
                                             withContext(Dispatchers.IO) {
                                                 val process = ProcessBuilder(
@@ -281,6 +282,13 @@ class BotApplication : KoinComponent {
                                                 process.waitFor()
                                             }
                                         }
+                                        */
+                                         */
+                                        bot.sendMessage(
+                                                chatId = ChatId.fromId(message.chat.id),
+                                                text = downloadItem.link,
+                                                parseMode = ParseMode.MARKDOWN
+                                        )
 
                                         bot.sendMessage(
                                                 chatId = ChatId.fromId(message.chat.id),
