@@ -282,22 +282,14 @@ class BotApplication : KoinComponent {
                                                 process.waitFor()
                                             }
                                         }
-
-
+                                    } else
                                         bot.sendMessage(
                                                 chatId = ChatId.fromId(message.chat.id),
-                                                text = downloadItem.download,
-                                                parseMode = ParseMode.MARKDOWN
-                                        )
-
-                                        bot.sendMessage(
-                                                chatId = ChatId.fromId(message.chat.id),
-                                                text = itemMessage,
-                                                parseMode = ParseMode.MARKDOWN
+                                                text = localization.wrongDownloadSyntax
                                         )
                                     }
                                 }
-                            }
+
                             args.isMagnet() -> {
                                 scope.launch {
                                     val addedMagnet: UploadedTorrent? = addMagnet(args)
