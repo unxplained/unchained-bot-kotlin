@@ -283,10 +283,10 @@ class BotApplication : KoinComponent {
                                             }
                                         }
                                         */
-                                        
+
                                         bot.sendMessage(
                                                 chatId = ChatId.fromId(message.chat.id),
-                                                text = downloadItem.link,
+                                                text = downloadItem.link +" "+ downloadItem.download +" "+ downloadItem.generated,
                                                 parseMode = ParseMode.MARKDOWN
                                         )
 
